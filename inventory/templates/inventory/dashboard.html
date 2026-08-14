@@ -1,0 +1,733 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>LPG Inventory Dashboard</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        /* =========================
+           LAYOUT
+        ========================= */
+
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 25px;
+        }
+
+        /* =========================
+           NAVIGATION
+        ========================= */
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            background: #343a40;
+            color: white;
+            padding: 11px 16px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .navigation a:hover {
+            background: #23272b;
+        }
+
+        .navigation a.active {
+            background: #007bff;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+        }
+
+        .header p {
+            margin: 0;
+            color: #666;
+        }
+
+        /* =========================
+           MAIN STATISTICS
+        ========================= */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .stat-description {
+            margin-top: 7px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        /* =========================
+           BRAND SECTION
+        ========================= */
+
+        .section {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+        }
+
+        .brand-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .brand-card {
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .brand-card h3 {
+            margin: 0 0 10px 0;
+        }
+
+        .brand-count {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .brand-label {
+            color: #777;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        /* =========================
+           TRANSACTIONS
+        ========================= */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-size: 13px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .transaction-type {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .transaction-type.in {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .transaction-type.out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .no-transactions {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        /* =========================
+           QUICK ACTIONS
+        ========================= */
+
+        .actions {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+        }
+
+        .action-button {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            padding: 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .action-blue {
+            background: #007bff;
+        }
+
+        .action-green {
+            background: #198754;
+        }
+
+        .action-dark {
+            background: #343a40;
+        }
+
+        .action-button:hover {
+            opacity: 0.9;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 850px) {
+
+            .stats-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .brand-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .actions {
+                grid-template-columns:
+                    1fr;
+            }
+
+        }
+
+        @media (max-width: 550px) {
+
+            .container {
+                padding: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .brand-grid {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .navigation a {
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- =====================================
+         NAVIGATION
+    ====================================== -->
+
+    <div class="navigation">
+
+        <a href="{% url 'dashboard' %}"
+           class="active">
+            Dashboard
+        </a>
+
+        <a href="{% url 'scan_in' %}">
+            Scan IN
+        </a>
+
+        <a href="{% url 'inventory_list' %}">
+            Inventory
+        </a>
+
+        <a href="{% url 'mass_scan' %}">
+            Mass Scan
+        </a>
+
+        <a href="{% url 'transaction_history' %}">
+            History
+        </a>
+
+    </div>
+
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
+    <div class="header">
+
+        <h1>
+            LPG Inventory Dashboard
+        </h1>
+
+        <p>
+            Current overview of cylinders
+            inside active inventory.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================
+         MAIN STATISTICS
+    ====================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- TOTAL -->
+
+        <div class="stat-card">
+
+            <h3>
+                Total Cylinders
+            </h3>
+
+            <div class="stat-number">
+
+                {{ total_cylinders }}
+
+            </div>
+
+            <div class="stat-description">
+
+                Currently in inventory
+
+            </div>
+
+        </div>
+
+
+        <!-- FULL -->
+
+        <div class="stat-card">
+
+            <h3>
+                Full Cylinders
+            </h3>
+
+            <div class="stat-number">
+
+                {{ full_cylinders }}
+
+            </div>
+
+            <div class="stat-description">
+
+                Full LPG cylinders
+
+            </div>
+
+        </div>
+
+
+        <!-- EMPTY -->
+
+        <div class="stat-card">
+
+            <h3>
+                Empty Cylinders
+            </h3>
+
+            <div class="stat-number">
+
+                {{ empty_cylinders }}
+
+            </div>
+
+            <div class="stat-description">
+
+                Empty LPG cylinders
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================
+         BRAND INVENTORY
+    ====================================== -->
+
+    <div class="section">
+
+        <h2>
+            Inventory by Brand
+        </h2>
+
+
+        <div class="brand-grid">
+
+
+            <!-- PAYGO -->
+
+            <div class="brand-card">
+
+                <h3>
+                    PayGo
+                </h3>
+
+                <div class="brand-count">
+
+                    {{ paygo_cylinders }}
+
+                </div>
+
+                <div class="brand-label">
+
+                    Cylinders currently in inventory
+
+                </div>
+
+            </div>
+
+
+            <!-- WAJIKO -->
+
+            <div class="brand-card">
+
+                <h3>
+                    Wajiko
+                </h3>
+
+                <div class="brand-count">
+
+                    {{ wajiko_cylinders }}
+
+                </div>
+
+                <div class="brand-label">
+
+                    Cylinders currently in inventory
+
+                </div>
+
+            </div>
+
+
+            <!-- GREENWELLS -->
+
+            <div class="brand-card">
+
+                <h3>
+                    GreenWells
+                </h3>
+
+                <div class="brand-count">
+
+                    {{ greenwells_cylinders }}
+
+                </div>
+
+                <div class="brand-label">
+
+                    Cylinders currently in inventory
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         QUICK ACTIONS
+    ====================================== -->
+
+    <div class="section">
+
+        <h2>
+            Quick Actions
+        </h2>
+
+
+        <div class="actions">
+
+
+            <a href="{% url 'scan_in' %}"
+               class="action-button action-blue">
+
+                Scan Cylinder IN
+
+            </a>
+
+
+            <a href="{% url 'mass_scan' %}"
+               class="action-button action-green">
+
+                Mass Scan OUT
+
+            </a>
+
+
+            <a href="{% url 'inventory_list' %}"
+               class="action-button action-dark">
+
+                View Inventory
+
+            </a>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         RECENT TRANSACTIONS
+    ====================================== -->
+
+    <div class="section">
+
+        <h2>
+            Recent Transactions
+        </h2>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Cylinder
+                        </th>
+
+                        <th>
+                            Transaction
+                        </th>
+
+                        <th>
+                            Destination
+                        </th>
+
+                        <th>
+                            Weight
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                {% for transaction in recent_transactions %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ transaction.cylinder.serial_number }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if transaction.transaction_type == "IN" %}
+
+                                <span class="transaction-type in">
+                                    SCAN IN
+                                </span>
+
+                            {% else %}
+
+                                <span class="transaction-type out">
+                                    SCAN OUT
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if transaction.destination %}
+
+                                {{ transaction.destination }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ transaction.weight }}
+                            kg
+
+                        </td>
+
+
+                        <td>
+
+                            {{ transaction.created_at|date:"d M Y, H:i" }}
+
+                        </td>
+
+                    </tr>
+
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="5">
+
+                            <div class="no-transactions">
+
+                                No transactions recorded yet.
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

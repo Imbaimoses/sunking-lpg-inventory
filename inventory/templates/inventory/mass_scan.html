@@ -1,0 +1,1114 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mass Scan - LPG Inventory</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+        }
+
+        .header p {
+            margin: 0;
+            color: #666;
+        }
+
+        .scan-box {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .scan-box h2 {
+            margin-top: 0;
+        }
+
+        .scan-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .scan-input {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .scan-input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .scan-button {
+            background: #007bff;
+            color: white;
+        }
+
+        .scan-button:hover {
+            background: #0056b3;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .summary-card {
+            background: white;
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 8px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-card strong {
+            font-size: 28px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.full {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.empty {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .remove-button {
+            background: #dc3545;
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .remove-button:hover {
+            background: #b02a37;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 35px;
+            color: #777;
+        }
+
+        .confirm-section {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .confirm-button {
+            width: 100%;
+            background: #198754;
+            color: white;
+            font-size: 17px;
+            padding: 16px;
+        }
+
+        .confirm-button:hover {
+            background: #146c43;
+        }
+
+        .confirm-button:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+
+        .navigation {
+            margin-bottom: 20px;
+        }
+
+        .navigation a {
+            display: inline-block;
+            text-decoration: none;
+            background: #343a40;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 7px;
+        }
+
+        .navigation a:hover {
+            background: #23272b;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                margin: 10px auto;
+                padding: 10px;
+            }
+
+            .scan-input-wrapper {
+                flex-direction: column;
+            }
+
+            .summary {
+                flex-direction: column;
+            }
+
+            th,
+            td {
+                font-size: 13px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- NAVIGATION -->
+
+    <div class="navigation">
+
+        <a href="{% url 'inventory_list' %}">
+            ← Inventory
+        </a>
+
+    </div>
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>Mass Scan</h1>
+
+        <p>
+            Scan multiple LPG cylinders and process them together.
+        </p>
+
+    </div>
+
+
+    <!-- SCANNER -->
+
+    <div class="scan-box">
+
+        <h2>Scan Cylinder</h2>
+
+        <div class="scan-input-wrapper">
+
+            <input
+                type="text"
+                id="scanInput"
+                class="scan-input"
+                placeholder="Scan or enter GLP cylinder number"
+                autocomplete="off"
+                autofocus
+            >
+
+            <button
+                type="button"
+                class="scan-button"
+                onclick="scanCylinder()"
+            >
+                Scan
+            </button>
+
+        </div>
+
+
+        <div
+            id="message"
+            class="message"
+        ></div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="summary">
+
+        <div class="summary-card">
+
+            <h3>Cylinders Scanned</h3>
+
+            <strong id="scanCount">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <h3>Total Weight</h3>
+
+            <strong id="totalWeight">
+                0.00 kg
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- SCANNED CYLINDERS -->
+
+    <div class="table-container">
+
+        <h2>
+            Scanned Cylinders
+        </h2>
+
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+
+                    <th>Serial Number</th>
+
+                    <th>Barcode</th>
+
+                    <th>Weight</th>
+
+                    <th>Brand</th>
+
+                    <th>Status</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="scanTableBody">
+
+                <tr>
+
+                    <td colspan="7">
+
+                        <div class="empty-message">
+                            No cylinders scanned yet.
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- CONFIRM -->
+
+    <div class="confirm-section">
+
+        <form
+            method="POST"
+            action="{% url 'mass_scan_confirm' %}"
+            id="confirmForm"
+        >
+
+            {% csrf_token %}
+
+
+            <div id="hiddenInputs"></div>
+
+
+            <button
+                type="submit"
+                id="confirmButton"
+                class="confirm-button"
+                disabled
+            >
+                Confirm Scan OUT
+            </button>
+
+        </form>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+/* =========================================
+   STORAGE
+========================================= */
+
+let scannedCylinders = [];
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+const scanInput =
+    document.getElementById("scanInput");
+
+
+/* =========================================
+   ENTER KEY
+========================================= */
+
+scanInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            scanCylinder();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   SCAN CYLINDER
+========================================= */
+
+function scanCylinder() {
+
+    const input =
+        document.getElementById("scanInput");
+
+
+    const code =
+        input.value.trim();
+
+
+    if (!code) {
+
+        showMessage(
+            "Please scan or enter a cylinder number.",
+            "error"
+        );
+
+        input.focus();
+
+        return;
+    }
+
+
+    /* =====================================
+       GLP VALIDATION
+    ===================================== */
+
+    if (
+        !code
+            .toUpperCase()
+            .startsWith("GLP")
+    ) {
+
+        showMessage(
+            "Invalid cylinder number. Cylinder numbers must begin with GLP.",
+            "error"
+        );
+
+        input.select();
+
+        return;
+    }
+
+
+    /* =====================================
+       ASK DJANGO
+    ===================================== */
+
+    fetch(
+        "{% url 'mass_scan_check' %}?code=" +
+        encodeURIComponent(code)
+    )
+
+    .then(function(response) {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Server returned an error."
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(function(data) {
+
+
+        /* =================================
+           CYLINDER NOT FOUND
+        ================================= */
+
+        if (!data.success) {
+
+            showMessage(
+                data.message,
+                "error"
+            );
+
+            input.select();
+
+            return;
+        }
+
+
+        /* =================================
+           DUPLICATE CHECK
+        ================================= */
+
+        const alreadyScanned =
+            scannedCylinders.some(
+                function(cylinder) {
+
+                    return Number(cylinder.id) ===
+                           Number(data.cylinder.id);
+
+                }
+            );
+
+
+        if (alreadyScanned) {
+
+            showMessage(
+                "This cylinder has already been scanned.",
+                "error"
+            );
+
+            input.select();
+
+            return;
+        }
+
+
+        /* =================================
+           ADD CYLINDER
+        ================================= */
+
+        scannedCylinders.push(
+            data.cylinder
+        );
+
+
+        renderScannedCylinders();
+
+
+        showMessage(
+            data.cylinder.serial_number +
+            " successfully scanned.",
+            "success"
+        );
+
+
+        /* =================================
+           CLEAR INPUT
+        ================================= */
+
+        input.value = "";
+
+        input.focus();
+
+    })
+
+    .catch(function(error) {
+
+        console.error(error);
+
+        showMessage(
+            "Unable to check the cylinder. Please try again.",
+            "error"
+        );
+
+    });
+
+}
+
+
+/* =========================================
+   RENDER CYLINDERS
+========================================= */
+
+function renderScannedCylinders() {
+
+
+    const tableBody =
+        document.getElementById(
+            "scanTableBody"
+        );
+
+
+    const scanCount =
+        document.getElementById(
+            "scanCount"
+        );
+
+
+    const totalWeight =
+        document.getElementById(
+            "totalWeight"
+        );
+
+
+    const confirmButton =
+        document.getElementById(
+            "confirmButton"
+        );
+
+
+    const hiddenInputs =
+        document.getElementById(
+            "hiddenInputs"
+        );
+
+
+    tableBody.innerHTML = "";
+
+    hiddenInputs.innerHTML = "";
+
+
+    let totalWeightValue = 0;
+
+
+    /* =====================================
+       EMPTY LIST
+    ===================================== */
+
+    if (
+        scannedCylinders.length === 0
+    ) {
+
+        tableBody.innerHTML = `
+
+            <tr>
+
+                <td colspan="7">
+
+                    <div class="empty-message">
+
+                        No cylinders scanned yet.
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+
+    /* =====================================
+       BUILD EVERY CYLINDER
+    ===================================== */
+
+    scannedCylinders.forEach(
+        function(cylinder, index) {
+
+
+            totalWeightValue +=
+                parseFloat(
+                    cylinder.weight
+                ) || 0;
+
+
+            const row =
+                document.createElement("tr");
+
+
+            const statusClass =
+                String(
+                    cylinder.status
+                ).toLowerCase();
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+
+                    <strong>
+
+                        ${escapeHtml(
+                            cylinder.serial_number
+                        )}
+
+                    </strong>
+
+                </td>
+
+                <td>
+
+                    ${escapeHtml(
+                        cylinder.barcode
+                    )}
+
+                </td>
+
+                <td>
+
+                    ${escapeHtml(
+                        cylinder.weight
+                    )} kg
+
+                </td>
+
+                <td>
+
+                    ${escapeHtml(
+                        cylinder.brand
+                    )}
+
+                </td>
+
+                <td>
+
+                    <span
+                        class="status ${statusClass}"
+                    >
+
+                        ${escapeHtml(
+                            cylinder.status
+                        )}
+
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <button
+                        type="button"
+                        class="remove-button"
+                        onclick="removeCylinder(${cylinder.id})"
+                    >
+
+                        Remove
+
+                    </button>
+
+                </td>
+
+            `;
+
+
+            tableBody.appendChild(row);
+
+
+            /* =================================
+               HIDDEN DJANGO INPUT
+            ================================= */
+
+            const hiddenInput =
+                document.createElement("input");
+
+
+            hiddenInput.type =
+                "hidden";
+
+
+            hiddenInput.name =
+                "cylinder_ids";
+
+
+            hiddenInput.value =
+                cylinder.id;
+
+
+            hiddenInputs.appendChild(
+                hiddenInput
+            );
+
+        }
+    );
+
+
+    /* =====================================
+       UPDATE SUMMARY
+    ===================================== */
+
+    scanCount.textContent =
+        scannedCylinders.length;
+
+
+    totalWeight.textContent =
+        totalWeightValue.toFixed(2) +
+        " kg";
+
+
+    /* =====================================
+       BUTTON
+    ===================================== */
+
+    confirmButton.disabled =
+        scannedCylinders.length === 0;
+
+}
+
+
+/* =========================================
+   REMOVE CYLINDER
+========================================= */
+
+function removeCylinder(id) {
+
+
+    scannedCylinders =
+        scannedCylinders.filter(
+            function(cylinder) {
+
+                return Number(
+                    cylinder.id
+                ) !== Number(id);
+
+            }
+        );
+
+
+    renderScannedCylinders();
+
+
+    showMessage(
+        "Cylinder removed from the scan list.",
+        "success"
+    );
+
+
+    scanInput.focus();
+
+}
+
+
+/* =========================================
+   CONFIRM FORM
+========================================= */
+
+const confirmForm =
+    document.getElementById(
+        "confirmForm"
+    );
+
+
+confirmForm.addEventListener(
+    "submit",
+    function(event) {
+
+
+        if (
+            scannedCylinders.length === 0
+        ) {
+
+            event.preventDefault();
+
+            showMessage(
+                "No cylinders have been scanned.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        /* =================================
+           REBUILD HIDDEN INPUTS
+        ================================= */
+
+        const hiddenInputs =
+            document.getElementById(
+                "hiddenInputs"
+            );
+
+
+        hiddenInputs.innerHTML = "";
+
+
+        scannedCylinders.forEach(
+            function(cylinder) {
+
+
+                const input =
+                    document.createElement(
+                        "input"
+                    );
+
+
+                input.type =
+                    "hidden";
+
+
+                input.name =
+                    "cylinder_ids";
+
+
+                input.value =
+                    cylinder.id;
+
+
+                hiddenInputs.appendChild(
+                    input
+                );
+
+            }
+        );
+
+
+        console.log(
+            "Submitting cylinder IDs:",
+            scannedCylinders.map(
+                function(cylinder) {
+
+                    return cylinder.id;
+
+                }
+            )
+        );
+
+
+        const confirmButton =
+            document.getElementById(
+                "confirmButton"
+            );
+
+
+        confirmButton.disabled = true;
+
+
+        confirmButton.textContent =
+            "Processing...";
+
+    }
+);
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+function showMessage(
+    text,
+    type
+) {
+
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    message.textContent =
+        text;
+
+
+    message.className =
+        "message " + type;
+
+
+    setTimeout(
+        function() {
+
+            message.className =
+                "message";
+
+
+            message.textContent =
+                "";
+
+        },
+        4000
+    );
+
+}
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(value) {
+
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        value;
+
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   KEEP SCANNER FOCUSED
+========================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+
+        if (
+
+            event.target.tagName !==
+                "BUTTON"
+
+            &&
+
+            event.target.tagName !==
+                "A"
+
+            &&
+
+            event.target.tagName !==
+                "INPUT"
+
+        ) {
+
+            scanInput.focus();
+
+        }
+
+    }
+);
+
+
+</script>
+
+</body>
+
+</html>

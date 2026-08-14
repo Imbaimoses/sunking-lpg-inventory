@@ -1,0 +1,1127 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Fast Scan IN - LPG Inventory</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* =========================
+           NAVIGATION
+        ========================= */
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            background: #343a40;
+            color: white;
+            padding: 11px 16px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .navigation a:hover {
+            background: #23272b;
+        }
+
+        .navigation a.active {
+            background: #007bff;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #666;
+        }
+
+        /* =========================
+           RECEIVING SETTINGS
+        ========================= */
+
+        .settings {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .settings h2 {
+            margin-top: 0;
+        }
+
+        .setting-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        /* =========================
+           SCANNER
+        ========================= */
+
+        .scanner {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .scanner h2 {
+            margin-top: 0;
+        }
+
+        .scanner-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 17px;
+            font-size: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #007bff;
+        }
+
+        .help {
+            margin-top: 8px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        /* =========================
+           STATUS MESSAGE
+        ========================= */
+
+        .message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* =========================
+           SESSION SUMMARY
+        ========================= */
+
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-card strong {
+            font-size: 28px;
+        }
+
+        /* =========================
+           LAST SCANNED
+        ========================= */
+
+        .last-scanned {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .last-scanned h2 {
+            margin-top: 0;
+        }
+
+        .last-cylinder {
+            padding: 18px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .last-cylinder strong {
+            font-size: 20px;
+        }
+
+        .last-details {
+            margin-top: 8px;
+            color: #666;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .container {
+                padding: 10px;
+            }
+
+            .setting-grid,
+            .scanner-grid,
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .navigation a {
+                text-align: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- =====================================
+         NAVIGATION
+    ====================================== -->
+
+    <div class="navigation">
+
+        <a href="{% url 'dashboard' %}">
+            Dashboard
+        </a>
+
+        <a href="{% url 'scan_in' %}"
+           class="active">
+            Scan IN
+        </a>
+
+        <a href="{% url 'inventory_list' %}">
+            Inventory
+        </a>
+
+        <a href="{% url 'mass_scan' %}">
+            Mass Scan
+        </a>
+
+        <a href="{% url 'transaction_history' %}">
+            History
+        </a>
+
+    </div>
+
+
+    <!-- =====================================
+         HEADER
+    ====================================== -->
+
+    <div class="header">
+
+        <h1>
+            Fast Cylinder Receiving
+        </h1>
+
+        <p>
+            Select the brand and status once,
+            then scan the cylinder and enter its weight.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================
+         RECEIVING SETTINGS
+    ====================================== -->
+
+    <div class="settings">
+
+        <h2>
+            Receiving Settings
+        </h2>
+
+        <div class="setting-grid">
+
+
+            <!-- BRAND -->
+
+            <div class="field">
+
+                <label for="brand">
+                    Cylinder Brand
+                </label>
+
+                <select id="brand">
+
+                    <option value="">
+                        Select Brand
+                    </option>
+
+                    <option value="PayGo">
+                        PayGo
+                    </option>
+
+                    <option value="Wajiko">
+                        Wajiko
+                    </option>
+
+                    <option value="GreenWells">
+                        GreenWells
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="field">
+
+                <label for="status">
+                    Cylinder Status
+                </label>
+
+                <select id="status">
+
+                    <option value="">
+                        Select Status
+                    </option>
+
+                    <option value="FULL">
+                        Full
+                    </option>
+
+                    <option value="EMPTY">
+                        Empty
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================
+         SCANNER
+    ====================================== -->
+
+    <div class="scanner">
+
+        <h2>
+            Receive Cylinder
+        </h2>
+
+        <div class="scanner-grid">
+
+
+            <!-- CYLINDER -->
+
+            <div class="input-group">
+
+                <label for="serialNumber">
+                    Cylinder Serial / Barcode
+                </label>
+
+                <input
+                    type="text"
+                    id="serialNumber"
+                    placeholder="Scan GLP cylinder"
+                    autocomplete="off"
+                    autofocus
+                >
+
+                <div class="help">
+                    Scan the cylinder. The scanned number
+                    automatically becomes both the serial
+                    number and barcode.
+                </div>
+
+            </div>
+
+
+            <!-- WEIGHT -->
+
+            <div class="input-group">
+
+                <label for="weight">
+                    Weight (kg)
+                </label>
+
+                <input
+                    type="number"
+                    id="weight"
+                    step="0.01"
+                    min="0"
+                    placeholder="Enter weight"
+                    autocomplete="off"
+                >
+
+                <div class="help">
+                    Press Enter after entering the weight.
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- MESSAGE -->
+
+        <div
+            id="message"
+            class="message"
+        ></div>
+
+    </div>
+
+
+    <!-- =====================================
+         SESSION SUMMARY
+    ====================================== -->
+
+    <div class="summary">
+
+
+        <div class="summary-card">
+
+            <h3>
+                Received This Session
+            </h3>
+
+            <strong id="receivedCount">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <h3>
+                Total Weight
+            </h3>
+
+            <strong id="sessionWeight">
+                0.00 kg
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <h3>
+                Current Brand
+            </h3>
+
+            <strong
+                id="currentBrand"
+                style="font-size: 20px;"
+            >
+                —
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================
+         LAST SCANNED
+    ====================================== -->
+
+    <div class="last-scanned">
+
+        <h2>
+            Last Received Cylinder
+        </h2>
+
+        <div
+            id="lastCylinder"
+            class="last-cylinder"
+        >
+
+            No cylinder received yet.
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const brandInput =
+    document.getElementById("brand");
+
+const statusInput =
+    document.getElementById("status");
+
+const serialInput =
+    document.getElementById("serialNumber");
+
+const weightInput =
+    document.getElementById("weight");
+
+const message =
+    document.getElementById("message");
+
+const receivedCount =
+    document.getElementById("receivedCount");
+
+const sessionWeight =
+    document.getElementById("sessionWeight");
+
+const currentBrand =
+    document.getElementById("currentBrand");
+
+const lastCylinder =
+    document.getElementById("lastCylinder");
+
+
+/* =========================================
+   SESSION DATA
+========================================= */
+
+let sessionCount = 0;
+
+let totalSessionWeight = 0;
+
+
+/* =========================================
+   BRAND CHANGE
+========================================= */
+
+brandInput.addEventListener(
+    "change",
+    function() {
+
+        currentBrand.textContent =
+            brandInput.value || "—";
+
+        serialInput.focus();
+
+    }
+);
+
+
+/* =========================================
+   SERIAL ENTER
+========================================= */
+
+serialInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            weightInput.focus();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   WEIGHT ENTER
+========================================= */
+
+weightInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            saveCylinder();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   SAVE CYLINDER
+========================================= */
+
+function saveCylinder() {
+
+    const serial =
+        serialInput.value.trim().toUpperCase();
+
+    const weight =
+        weightInput.value.trim();
+
+    const brand =
+        brandInput.value;
+
+    const status =
+        statusInput.value;
+
+
+    /* =====================================
+       BRAND
+    ===================================== */
+
+    if (!brand) {
+
+        showMessage(
+            "Please select the cylinder brand.",
+            "error"
+        );
+
+        brandInput.focus();
+
+        return;
+
+    }
+
+
+    /* =====================================
+       STATUS
+    ===================================== */
+
+    if (!status) {
+
+        showMessage(
+            "Please select the cylinder status.",
+            "error"
+        );
+
+        statusInput.focus();
+
+        return;
+
+    }
+
+
+    /* =====================================
+       SERIAL
+    ===================================== */
+
+    if (!serial) {
+
+        showMessage(
+            "Please scan a cylinder.",
+            "error"
+        );
+
+        serialInput.focus();
+
+        return;
+
+    }
+
+
+    /* =====================================
+       GLP VALIDATION
+    ===================================== */
+
+    if (!serial.startsWith("GLP")) {
+
+        showMessage(
+            "Invalid cylinder number. Cylinder numbers must begin with GLP.",
+            "error"
+        );
+
+        serialInput.select();
+
+        return;
+
+    }
+
+
+    /* =====================================
+       WEIGHT
+    ===================================== */
+
+    if (!weight) {
+
+        showMessage(
+            "Please enter the cylinder weight.",
+            "error"
+        );
+
+        weightInput.focus();
+
+        return;
+
+    }
+
+
+    const numericWeight =
+        parseFloat(weight);
+
+
+    if (
+        isNaN(numericWeight)
+        ||
+        numericWeight <= 0
+    ) {
+
+        showMessage(
+            "Please enter a valid weight.",
+            "error"
+        );
+
+        weightInput.select();
+
+        return;
+
+    }
+
+
+    /* =====================================
+       PREPARE DATA
+    ===================================== */
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "serial_number",
+        serial
+    );
+
+    formData.append(
+        "weight",
+        weight
+    );
+
+    formData.append(
+        "brand",
+        brand
+    );
+
+    formData.append(
+        "status",
+        status
+    );
+
+    formData.append(
+        "csrfmiddlewaretoken",
+        getCookie("csrftoken")
+    );
+
+
+    /* =====================================
+       DISABLE INPUT WHILE SAVING
+    ===================================== */
+
+    serialInput.disabled = true;
+
+    weightInput.disabled = true;
+
+
+    /* =====================================
+       SEND TO DJANGO
+    ===================================== */
+
+    fetch(
+        "{% url 'fast_scan_in' %}",
+        {
+            method: "POST",
+            body: formData
+        }
+    )
+
+    .then(function(response) {
+
+        return response.json();
+
+    })
+
+    .then(function(data) {
+
+
+        /* =================================
+           ERROR
+        ================================= */
+
+        if (!data.success) {
+
+            showMessage(
+                data.message,
+                "error"
+            );
+
+            serialInput.disabled = false;
+
+            weightInput.disabled = false;
+
+            serialInput.focus();
+
+            serialInput.select();
+
+            return;
+
+        }
+
+
+        /* =================================
+           SUCCESS
+        ================================= */
+
+        sessionCount++;
+
+        totalSessionWeight +=
+            numericWeight;
+
+
+        receivedCount.textContent =
+            sessionCount;
+
+
+        sessionWeight.textContent =
+            totalSessionWeight.toFixed(2)
+            + " kg";
+
+
+        currentBrand.textContent =
+            brand;
+
+
+        lastCylinder.innerHTML = `
+
+            <strong>
+                ${escapeHtml(
+                    data.cylinder.serial_number
+                )}
+            </strong>
+
+            <div class="last-details">
+
+                Weight:
+                ${escapeHtml(
+                    data.cylinder.weight
+                )} kg
+
+                &nbsp; | &nbsp;
+
+                Brand:
+                ${escapeHtml(
+                    data.cylinder.brand
+                )}
+
+                &nbsp; | &nbsp;
+
+                Status:
+                ${escapeHtml(
+                    data.cylinder.status
+                )}
+
+            </div>
+
+        `;
+
+
+        showMessage(
+            data.message,
+            "success"
+        );
+
+
+        /* =================================
+           CLEAR FOR NEXT CYLINDER
+        ================================= */
+
+        serialInput.value = "";
+
+        weightInput.value = "";
+
+        serialInput.disabled = false;
+
+        weightInput.disabled = false;
+
+        serialInput.focus();
+
+    })
+
+    .catch(function(error) {
+
+        console.error(error);
+
+        showMessage(
+            "Unable to save the cylinder. Please try again.",
+            "error"
+        );
+
+        serialInput.disabled = false;
+
+        weightInput.disabled = false;
+
+        serialInput.focus();
+
+    });
+
+}
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+function showMessage(
+    text,
+    type
+) {
+
+    message.textContent =
+        text;
+
+    message.className =
+        "message " + type;
+
+
+    setTimeout(
+        function() {
+
+            message.className =
+                "message";
+
+            message.textContent =
+                "";
+
+        },
+        4000
+    );
+
+}
+
+
+/* =========================================
+   CSRF COOKIE
+========================================= */
+
+function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (document.cookie) {
+
+        const cookies =
+            document.cookie.split(";");
+
+        for (
+            let i = 0;
+            i < cookies.length;
+            i++
+        ) {
+
+            const cookie =
+                cookies[i].trim();
+
+            if (
+                cookie.substring(
+                    0,
+                    name.length + 1
+                )
+                ===
+                (name + "=")
+            ) {
+
+                cookieValue =
+                    decodeURIComponent(
+                        cookie.substring(
+                            name.length + 1
+                        )
+                    );
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    return cookieValue;
+
+}
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value;
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   KEEP SCANNER READY
+========================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+
+            event.target.tagName !== "A"
+
+            &&
+            
+            event.target.tagName !== "SELECT"
+
+            &&
+            
+            event.target.tagName !== "INPUT"
+
+        ) {
+
+            if (!serialInput.disabled) {
+
+                serialInput.focus();
+
+            }
+
+        }
+
+    }
+);
+
+
+</script>
+
+
+</body>
+
+</html>

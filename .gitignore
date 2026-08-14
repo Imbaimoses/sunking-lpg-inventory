@@ -22,3 +22,7 @@ staticfiles/
 
 __pycache__/
 *.egg-info/
+# Local transfer and database backup files
+LPG_Inventory_SYSTEM_TRANSFER.zip
+LPG_Inventory_TRANSFER/
+lpg_inventory_backup.dump

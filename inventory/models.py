@@ -58,14 +58,60 @@ class Cylinder(models.Model):
         """
         Validate the cylinder.
 
-        Every cylinder serial number must begin with GLP.
+        Rules:
+        - Serial number must begin with GLP.
+        - Empty cylinder: 11.5 kg to 25.1 kg.
+        - Full cylinder: 24.5 kg to 25.1 kg.
         """
 
+        errors = {}
+
+        # -------------------------------------------------
+        # SERIAL NUMBER VALIDATION
+        # -------------------------------------------------
+
         if not self.serial_number.upper().startswith('GLP'):
-            raise ValidationError(
+            errors['serial_number'] = (
                 'Invalid cylinder serial number. '
                 'Cylinder numbers must begin with GLP.'
             )
+
+        # -------------------------------------------------
+        # WEIGHT VALIDATION
+        # -------------------------------------------------
+
+        if self.weight is not None:
+
+            if self.status == 'EMPTY':
+
+                if self.weight < 11.5:
+                    errors['weight'] = (
+                        'The weight will result in an underweight cylinder. '
+                        'Kindly check the weight and try again.'
+                    )
+
+                elif self.weight > 25.1:
+                    errors['weight'] = (
+                        'The weight will result in an overweight cylinder. '
+                        'Kindly check the weight and try again.'
+                    )
+
+            elif self.status == 'FULL':
+
+                if self.weight < 24.5:
+                    errors['weight'] = (
+                        'The weight will result in an underweight cylinder. '
+                        'Kindly check the weight and try again.'
+                    )
+
+                elif self.weight > 25.1:
+                    errors['weight'] = (
+                        'The weight will result in an overweight cylinder. '
+                        'Kindly check the weight and try again.'
+                    )
+
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         """

@@ -90,6 +90,46 @@ class CylinderScanInForm(forms.ModelForm):
 
         return barcode
 
+    def clean_weight(self):
+        weight = self.cleaned_data.get('weight')
+
+        if weight is None:
+            return weight
+
+        source = self.cleaned_data.get('source')
+
+        # Received from Warehouse = FULL
+        if source == 'WAREHOUSE':
+
+            if weight < 24.5:
+                raise forms.ValidationError(
+                    'The weight will result in an underweight cylinder. '
+                    'Kindly check the weight and try again.'
+                )
+
+            if weight > 25.1:
+                raise forms.ValidationError(
+                    'The weight will result in an overweight cylinder. '
+                    'Kindly check the weight and try again.'
+                )
+
+        # Returned from Field = EMPTY
+        elif source == 'FIELD':
+
+            if weight < 11.5:
+                raise forms.ValidationError(
+                    'The weight will result in an underweight cylinder. '
+                    'Kindly check the weight and try again.'
+                )
+
+            if weight > 25.1:
+                raise forms.ValidationError(
+                    'The weight will result in an overweight cylinder. '
+                    'Kindly check the weight and try again.'
+                )
+
+        return weight
+
     def save(self, commit=True):
         cylinder = super().save(commit=False)
 

@@ -8,33 +8,37 @@ from pathlib import Path
 import os
 import dj_database_url
 
-# Build paths inside the project like this:
-# BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # =========================================================
+
 # SECURITY
+
 # =========================================================
 
 SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-local-development-key-change-this'
+'DJANGO_SECRET_KEY',
+'django-insecure-local-development-key-change-this'
 )
 
 DEBUG = os.environ.get(
-    'DJANGO_DEBUG',
-    'True'
+'DJANGO_DEBUG',
+'True'
 ).lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get(
-    'DJANGO_ALLOWED_HOSTS',
-    'localhost,127.0.0.1'
+ALLOWED_HOSTS = [
+host.strip()
+for host in os.environ.get(
+'DJANGO_ALLOWED_HOSTS',
+'localhost,127.0.0.1'
 ).split(',')
-
+if host.strip()
+]
 
 # =========================================================
+
 # APPLICATIONS
+
 # =========================================================
 
 INSTALLED_APPS = [
@@ -44,107 +48,137 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Our LPG inventory application
     'inventory',
 ]
 
-
 # =========================================================
+
 # MIDDLEWARE
+
 # =========================================================
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+'django.middleware.security.SecurityMiddleware',
+'whitenoise.middleware.WhiteNoiseMiddleware',
+'django.contrib.sessions.middleware.SessionMiddleware',
+'django.middleware.common.CommonMiddleware',
+'django.middleware.csrf.CsrfViewMiddleware',
+'django.contrib.auth.middleware.AuthenticationMiddleware',
+'django.contrib.messages.middleware.MessageMiddleware',
+'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 # =========================================================
+
 # URL CONFIGURATION
+
 # =========================================================
 
 ROOT_URLCONF = 'config.urls'
 
-
 # =========================================================
+
 # TEMPLATES
+
 # =========================================================
 
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
+{
+'BACKEND': 'django.template.backends.django.DjangoTemplates',
+'DIRS': [],
+'APP_DIRS': True,
+'OPTIONS': {
+'context_processors': [
+'django.template.context_processors.request',
+'django.contrib.auth.context_processors.auth',
+'django.contrib.messages.context_processors.messages',
+],
+},
+},
 ]
 
-
 # =========================================================
+
 # WSGI
+
 # =========================================================
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# =========================================================
+
+# DATABASE
 
 # =========================================================
-# DATABASE
-# =========================================================
+
 #
+
 # LOCAL:
-# Uses the existing PostgreSQL database on this laptop.
+
+# Uses local PostgreSQL.
+
 #
-# RENDER:
-# Uses DATABASE_URL supplied by Render.
+
+# PRODUCTION:
+
+# Uses DATABASE_URL supplied by PythonAnywhere.
+
+#
+
+# The Neon connection string will NOT be stored directly
+
+# in this file. It will be supplied through DATABASE_URL.
+
 #
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=(
-            'postgresql://postgres:41200100'
-            '@localhost:5432/sunking_lpg_inventory'
-        ),
-        conn_max_age=600,
-        ssl_require=False,
-    )
+'default': dj_database_url.config(
+default=(
+'postgresql://postgres:41200100'
+'@localhost:5432/sunking_lpg_inventory'
+),
+conn_max_age=600,
+ssl_require=False,
+)
 }
 
-
 # =========================================================
+
 # PASSWORD VALIDATION
+
 # =========================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+{
+'NAME': (
+'django.contrib.auth.password_validation.'
+'UserAttributeSimilarityValidator'
+),
+},
+{
+'NAME': (
+'django.contrib.auth.password_validation.'
+'MinimumLengthValidator'
+),
+},
+{
+'NAME': (
+'django.contrib.auth.password_validation.'
+'CommonPasswordValidator'
+),
+},
+{
+'NAME': (
+'django.contrib.auth.password_validation.'
+'NumericPasswordValidator'
+),
+},
 ]
 
-
 # =========================================================
+
 # INTERNATIONALIZATION
+
 # =========================================================
 
 LANGUAGE_CODE = 'en-us'
@@ -155,43 +189,58 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # =========================================================
+
 # STATIC FILES
+
 # =========================================================
 
 STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# =========================================================
+
+# STORAGE
+
+# =========================================================
+
 STORAGES = {
-    'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
-    },
+'default': {
+'BACKEND': (
+'django.core.files.storage.FileSystemStorage'
+),
+},
+'staticfiles': {
+'BACKEND': (
+'whitenoise.storage.'
+'CompressedManifestStaticFilesStorage'
+),
+},
 }
 
-
 # =========================================================
+
 # MEDIA FILES
-# =========================================================
 
-# QR codes and other uploaded/generated files
-# are stored inside the project's media folder.
+# =========================================================
 
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # =========================================================
+
 # DEFAULT PRIMARY KEY
+
 # =========================================================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # =========================================================
+
 # EMAIL
+
 # =========================================================
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

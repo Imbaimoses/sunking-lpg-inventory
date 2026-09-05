@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.db.models import Q
+from django.core.exceptions import ValidationError
+from decimal import Decimal, InvalidOperation
 
 from .forms import CylinderScanInForm
 from .models import Cylinder, CylinderTransaction
@@ -157,11 +159,9 @@ def fast_scan_in(request):
 
     try:
 
-        from decimal import Decimal
-
         cylinder_weight = Decimal(weight)
 
-    except Exception:
+    except (InvalidOperation, ValueError):
 
         return JsonResponse({
             "success": False,
@@ -198,23 +198,32 @@ def fast_scan_in(request):
 
         # Existing cylinder was previously removed.
         # We can bring it back into inventory.
-        with transaction.atomic():
+        try:
 
-            existing.serial_number = serial_number
-            existing.barcode = serial_number
-            existing.weight = cylinder_weight
-            existing.brand = brand
-            existing.status = status
-            existing.is_active = True
+            with transaction.atomic():
 
-            existing.save()
+                existing.serial_number = serial_number
+                existing.barcode = serial_number
+                existing.weight = cylinder_weight
+                existing.brand = brand
+                existing.status = status
+                existing.is_active = True
 
-            CylinderTransaction.objects.create(
-                cylinder=existing,
-                transaction_type="IN",
-                destination="WAREHOUSE",
-                weight=cylinder_weight
-            )
+                existing.save()
+
+                CylinderTransaction.objects.create(
+                    cylinder=existing,
+                    transaction_type="IN",
+                    destination="WAREHOUSE",
+                    weight=cylinder_weight
+                )
+
+        except ValidationError as error:
+
+            return JsonResponse({
+                "success": False,
+                "message": get_validation_message(error)
+            })
 
         return JsonResponse({
             "success": True,
@@ -235,24 +244,33 @@ def fast_scan_in(request):
     # NEW CYLINDER
     # --------------------------------------------------------
 
-    with transaction.atomic():
+    try:
 
-        cylinder = Cylinder.objects.create(
-            serial_number=serial_number,
-            barcode=serial_number,
-            weight=cylinder_weight,
-            brand=brand,
-            status=status,
-            is_active=True
-        )
+        with transaction.atomic():
 
-        # Permanent IN transaction history
-        CylinderTransaction.objects.create(
-            cylinder=cylinder,
-            transaction_type="IN",
-            destination="WAREHOUSE",
-            weight=cylinder_weight
-        )
+            cylinder = Cylinder.objects.create(
+                serial_number=serial_number,
+                barcode=serial_number,
+                weight=cylinder_weight,
+                brand=brand,
+                status=status,
+                is_active=True
+            )
+
+            # Permanent IN transaction history
+            CylinderTransaction.objects.create(
+                cylinder=cylinder,
+                transaction_type="IN",
+                destination="WAREHOUSE",
+                weight=cylinder_weight
+            )
+
+    except ValidationError as error:
+
+        return JsonResponse({
+            "success": False,
+            "message": get_validation_message(error)
+        })
 
     return JsonResponse({
         "success": True,
@@ -267,6 +285,32 @@ def fast_scan_in(request):
             "status": cylinder.status,
         }
     })
+
+
+# ============================================================
+# VALIDATION ERROR MESSAGE
+# ============================================================
+
+def get_validation_message(error):
+
+    """
+    Extract the actual user-friendly validation message
+    from Django's ValidationError.
+    """
+
+    if hasattr(error, "message_dict"):
+
+        for field_errors in error.message_dict.values():
+
+            if field_errors:
+
+                return str(field_errors[0])
+
+    if hasattr(error, "messages") and error.messages:
+
+        return str(error.messages[0])
+
+    return "Unable to save the cylinder. Please check and try again."
 
 
 # ============================================================
